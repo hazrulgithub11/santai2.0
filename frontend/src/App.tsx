@@ -1,26 +1,63 @@
-import { motion } from "framer-motion";
-import { PlugControl } from "@/components/PlugControl";
+import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import { LayoutGridIcon, ShieldIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AdminPage } from "@/pages/AdminPage";
+import { HomePage } from "@/pages/HomePage";
+
+const navLinkClass =
+  "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
 
 function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-8 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="flex w-full max-w-lg flex-col items-center gap-6"
-      >
-        <div className="text-center">
-          <h1 className="font-heading text-3xl font-semibold tracking-tight">
-            Santai
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Local Tuya smart plug control via the API (no cloud commands).
+    <BrowserRouter>
+      <div className="flex min-h-svh flex-col items-center gap-6 p-6 py-10">
+        <header className="flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-muted-foreground text-center text-xs sm:text-left">
+            <span className="text-foreground font-medium">Santai</span> — cybercafe
+            management
           </p>
-        </div>
-        <PlugControl />
-      </motion.div>
-    </div>
+          <nav
+            className="flex flex-wrap items-center justify-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm sm:justify-end"
+            aria-label="Main"
+          >
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                cn(
+                  navLinkClass,
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )
+              }
+            >
+              <LayoutGridIcon className="size-4" aria-hidden />
+              Stations
+            </NavLink>
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                cn(
+                  navLinkClass,
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )
+              }
+            >
+              <ShieldIcon className="size-4" aria-hidden />
+              Admin
+            </NavLink>
+          </nav>
+        </header>
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 

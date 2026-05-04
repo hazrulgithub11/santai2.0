@@ -9,8 +9,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Placeholder so the first migration can run. Replace with your domain models when ready.
-model SchemaBootstrap {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+model Station {
+  id        Int       @id @default(autoincrement())
+  name      String
+  deviceId  String
+  localKey  String
+  ipAddress String
+  isActive  Boolean   @default(false)
+  sessions  Session[]
+}
+
+model Session {
+  id         Int      @id @default(autoincrement())
+  stationId  Int
+  station    Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  startTime  DateTime @default(now())
+  endTime    DateTime
+  isFinished Boolean  @default(false)
+
+  @@index([isFinished, endTime])
 }

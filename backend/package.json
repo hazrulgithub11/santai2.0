@@ -14,7 +14,11 @@
     "db:migrate": "node scripts/run-prisma.mjs migrate dev",
     "db:migrate:deploy": "node scripts/run-prisma.mjs migrate deploy",
     "db:push": "node scripts/run-prisma.mjs db push",
-    "db:studio": "node scripts/run-prisma.mjs studio"
+    "db:studio": "node scripts/run-prisma.mjs studio",
+    "db:seed": "node scripts/run-prisma.mjs db seed"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "keywords": [],
   "author": "",

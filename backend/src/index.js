@@ -1,12 +1,9 @@
 import "dotenv/config";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { startServer } from "./server.js";
 
 const config = loadConfig();
 const app = createApp(config);
 
-app.listen(config.port, config.host, () => {
-  console.log(
-    `Listening on http://${config.host}:${config.port} (${config.nodeEnv})`,
-  );
-});
+startServer(app, config);
