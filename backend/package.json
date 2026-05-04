@@ -7,21 +7,43 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "postinstall": "node scripts/run-prisma.mjs generate",
+    "db:generate": "node scripts/run-prisma.mjs generate",
+    "db:create": "node scripts/ensure-database.mjs",
+    "db:migrate": "node scripts/run-prisma.mjs migrate dev",
+    "db:migrate:deploy": "node scripts/run-prisma.mjs migrate deploy",
+    "db:push": "node scripts/run-prisma.mjs db push",
+    "db:studio": "node scripts/run-prisma.mjs studio",
+    "db:seed": "node scripts/run-prisma.mjs db seed"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.33.2",
   "dependencies": {
+    "@prisma/client": "6.19.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.2.1",
+    "pg": "^8.14.1",
     "helmet": "^8.1.0",
     "pino": "^9.7.0",
-    "pino-http": "^10.4.0"
+    "pino-http": "^10.4.0",
+    "tuyapi": "^7.7.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "prisma": "6.19.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines"
+    ]
   }
 }

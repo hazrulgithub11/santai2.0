@@ -1,50 +1,63 @@
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { getApiBaseUrl } from "@/lib/api-base";
+import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import { LayoutGridIcon, ShieldIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AdminPage } from "@/pages/AdminPage";
+import { HomePage } from "@/pages/HomePage";
+
+const navLinkClass =
+  "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
 
 function App() {
-  const apiBase = getApiBaseUrl();
-
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-8 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="flex max-w-md flex-col items-center gap-4 text-center"
-      >
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
-          Santai frontend
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Vite, React, Tailwind, shadcn/ui, and Framer Motion are wired up. Use{" "}
-          <code className="bg-muted rounded px-1.5 py-0.5 text-xs">
-            pnpm dlx shadcn@latest add …
-          </code>{" "}
-          to add more components.
-        </p>
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="inline-flex"
-        >
-          <Button type="button">Motion + Button</Button>
-        </motion.div>
-        <p className="text-muted-foreground text-xs">
-          API base:{" "}
-          {apiBase !== undefined ? (
-            <code className="text-foreground">{apiBase}</code>
-          ) : (
-            <span>
-              not set — copy{" "}
-              <code className="bg-muted rounded px-1 py-0.5">.env.example</code>{" "}
-              to <code className="bg-muted rounded px-1 py-0.5">.env</code> and
-              set <code className="bg-muted rounded px-1 py-0.5">VITE_API_URL</code>
-            </span>
-          )}
-        </p>
-      </motion.div>
-    </div>
+    <BrowserRouter>
+      <div className="flex min-h-svh flex-col items-center gap-6 p-6 py-10">
+        <header className="flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-muted-foreground text-center text-xs sm:text-left">
+            <span className="text-foreground font-medium">Santai</span> — cybercafe
+            management
+          </p>
+          <nav
+            className="flex flex-wrap items-center justify-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm sm:justify-end"
+            aria-label="Main"
+          >
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                cn(
+                  navLinkClass,
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )
+              }
+            >
+              <LayoutGridIcon className="size-4" aria-hidden />
+              Stations
+            </NavLink>
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                cn(
+                  navLinkClass,
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )
+              }
+            >
+              <ShieldIcon className="size-4" aria-hidden />
+              Admin
+            </NavLink>
+          </nav>
+        </header>
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 

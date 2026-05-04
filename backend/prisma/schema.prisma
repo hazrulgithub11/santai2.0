@@ -1,0 +1,31 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Station {
+  id        Int       @id @default(autoincrement())
+  name      String
+  deviceId  String
+  localKey  String
+  ipAddress String
+  isActive  Boolean   @default(false)
+  sessions  Session[]
+}
+
+model Session {
+  id         Int      @id @default(autoincrement())
+  stationId  Int
+  station    Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  startTime  DateTime @default(now())
+  endTime    DateTime
+  isFinished Boolean  @default(false)
+
+  @@index([isFinished, endTime])
+}
