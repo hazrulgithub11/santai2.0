@@ -1,9 +1,8 @@
 import { BrowserRouter, NavLink, Outlet, Route, Routes } from "react-router-dom";
-import { LayoutGridIcon, Orbit, ShieldIcon } from "lucide-react";
+import { LayoutGridIcon, ShieldIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminPage } from "@/pages/AdminPage";
 import { HomePage } from "@/pages/HomePage";
-import { OrbitLandingPage } from "@/pages/OrbitLandingPage";
 
 const navLinkClass =
   "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
@@ -49,20 +48,6 @@ function AppLayout() {
             <ShieldIcon className="size-4" aria-hidden />
             Admin
           </NavLink>
-          <NavLink
-            to="/orbit"
-            className={({ isActive }) =>
-              cn(
-                navLinkClass,
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )
-            }
-          >
-            <Orbit className="size-4" aria-hidden />
-            Orbit
-          </NavLink>
         </nav>
       </header>
 
@@ -75,7 +60,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/orbit" element={<OrbitLandingPage />} />
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/admin" element={<AdminPage />} />
