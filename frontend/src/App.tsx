@@ -3,6 +3,7 @@ import { LayoutGridIcon, ShieldIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminPage } from "@/pages/AdminPage";
 import { HomePage } from "@/pages/HomePage";
+import { BloomLandingPage } from "@/pages/BloomLandingPage";
 
 const navLinkClass =
   "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
@@ -20,7 +21,7 @@ function AppLayout() {
           aria-label="Main"
         >
           <NavLink
-            to="/"
+            to="/app"
             end
             className={({ isActive }) =>
               cn(
@@ -35,7 +36,7 @@ function AppLayout() {
             Stations
           </NavLink>
           <NavLink
-            to="/admin"
+            to="/app/admin"
             className={({ isActive }) =>
               cn(
                 navLinkClass,
@@ -60,9 +61,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Bloom landing page — full-screen, no app shell */}
+        <Route path="/" element={<BloomLandingPage />} />
+
+        {/* Santai cybercafe app — wrapped in the standard shell */}
         <Route element={<AppLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/app" element={<HomePage />} />
+          <Route path="/app/admin" element={<AdminPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
