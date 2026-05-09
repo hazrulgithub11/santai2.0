@@ -580,6 +580,14 @@ export function BloomLandingPage() {
           <div className="bloom-landing-secondary__frost" aria-hidden />
 
           <div className="relative z-10 flex w-full flex-col gap-6 p-4 sm:p-6">
+          {/*
+            Wrap the top three blocks (top bar, live status, feature carousel + how-it-works)
+            in a single max-width container so they match the width of the lower sections
+            ("Available services", "Service pricing", "Visit", etc.) which each use max-w-5xl.
+            We keep `flex flex-col gap-6` here so the internal vertical rhythm matches the
+            parent's gap-6 — i.e. spacing inside this wrapper is identical to spacing outside it.
+          */}
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
           {/* ── TOP BAR ─────────────────────────────────────────────── */}
           <div className="flex items-center justify-between">
 
@@ -788,6 +796,8 @@ export function BloomLandingPage() {
 
             </div>
           </div>
+          </div>
+          {/* end of max-w-5xl wrapper for the top three blocks */}
 
           {/* ── AVAILABLE SERVICES ─────────────────────────────────── */}
           <section aria-labelledby="services-heading" className="mx-auto w-full max-w-5xl">
