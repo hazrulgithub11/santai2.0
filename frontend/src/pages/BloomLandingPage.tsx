@@ -108,9 +108,7 @@ export function BloomLandingPage() {
               {/* Scales from 56 px on phones up to 80 px on desktop */}
               <SantaiLogo className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
 
-              <p className="liquid-glass rounded-full px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-white/70">
-                Real-time station view
-              </p>
+              
 
               <h1 className="text-4xl font-medium leading-tight tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
                 Santai E-Sports
