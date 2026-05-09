@@ -7,6 +7,8 @@ import { HomePage } from "@/pages/HomePage";
 import { LiveStationsPage } from "@/pages/LiveStationsPage";
 import { ViewLivePage } from "@/pages/ViewLivePage";
 import { BloomLandingPage } from "@/pages/BloomLandingPage";
+import { AdminAnalyticsPage } from "@/pages/AdminAnalyticsPage";
+import { AdminOperationsPage } from "@/pages/AdminOperationsPage";
 import loadingVideo from "@/assets/video/loadingsantai2.mp4";
 
 function AppLayout() {
@@ -89,6 +91,8 @@ function App() {
           <Route path="/app/live" element={<LiveStationsPage />} />
           <Route path="/app/view-live" element={<ViewLivePage />} />
           <Route path="/app/admin" element={<AdminPage />} />
+          <Route path="/app/admin/analytics" element={<AdminAnalyticsPage />} />
+          <Route path="/app/admin/operations" element={<AdminOperationsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
