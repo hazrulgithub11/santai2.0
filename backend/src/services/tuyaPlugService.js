@@ -55,6 +55,16 @@ async function discoverLanSnapshot(config) {
     version: config.protocolVersion,
     issueGetOnConnect: false,
   });
+
+  // Same guard as withDevice: prevent an unhandled 'error' event from crashing
+  // the process if the UDP probe encounters a socket-level failure.
+  probe.on("error", (err) => {
+    console.warn(
+      "[tuya-plug] discovery probe error:",
+      err instanceof Error ? err.message : err,
+    );
+  });
+
   try {
     await probe.find({ timeout: 8 });
     const ip = probe.device.ip;
@@ -158,8 +168,21 @@ function createDevice(config) {
  */
 async function withDevice(config, fn) {
   const device = createDevice(config);
+
+  // TuyaAPI emits an 'error' event on the device EventEmitter for socket-level
+  // failures (e.g. EHOSTUNREACH when the device is offline or unreachable).
+  // Node.js EventEmitter behaviour: if no 'error' listener is registered, it
+  // re-throws the error as an uncaught exception and crashes the process.
+  // We capture it into a rejected Promise and race it against fn(), so the
+  // error surfaces as a normal Promise rejection rather than a process crash.
+  const deviceError = new Promise((_resolve, reject) => {
+    device.on("error", reject);
+  });
+
   try {
-    return await fn(device);
+    // If the device emits 'error' before fn() resolves, deviceError wins the
+    // race and the whole call rejects with the socket error immediately.
+    return await Promise.race([fn(device), deviceError]);
   } finally {
     try {
       device.disconnect();
