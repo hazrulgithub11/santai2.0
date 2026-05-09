@@ -1,16 +1,25 @@
 import {
   ArrowRight,
+  Building2,
+  Car,
   Clock3,
+  ExternalLink,
   Gamepad2,
   LayoutGrid,
+  MapPin,
   Menu,
+  MessageCircle,
   Monitor,
+  Phone,
+  Sparkles,
   Timer,
+  type LucideIcon,
   Users,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import santaiVideo from "@/assets/video/santai2.mp4";
+import CircularGallery from "@/components/CircularGallery";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { parseStationsPayload, readErrorMessage } from "@/lib/stations-api";
 
@@ -49,6 +58,109 @@ function IconCircle({ children }: { children: React.ReactNode }) {
     <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/10">
       {children}
     </span>
+  );
+}
+
+/** Edit address, phone, and social URLs here (no layout changes needed). */
+const VISIT_ADDRESS = "Lot XX, Your Area, Your City";
+const VISIT_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(VISIT_ADDRESS)}`;
+const VISIT_PHONE_LABEL = "+60 XX-XXX XXXX";
+const VISIT_PHONE_HREF = "tel:+60XXXXXXXXX";
+const VISIT_WHATSAPP_URL = "https://wa.me/60XXXXXXXXX";
+const VISIT_SOCIAL_INSTAGRAM = "https://www.instagram.com/";
+
+const CYBERCAFE_SERVICES: {
+  title: string;
+  description: string;
+  fromPrice: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    title: "VR Gaming",
+    description: "Immersive virtual reality games and experiences.",
+    fromPrice: "From RM 10 / session",
+    icon: Sparkles,
+  },
+  {
+    title: "PS5 Console",
+    description: "Play popular PlayStation titles with friends.",
+    fromPrice: "From RM 8 / hour",
+    icon: Gamepad2,
+  },
+  {
+    title: "Sim Racing",
+    description: "Racing wheel setup for realistic driving sessions.",
+    fromPrice: "From RM 12 / session",
+    icon: Car,
+  },
+  {
+    title: "PC Gaming",
+    description: "High-performance PCs for competitive and casual gaming.",
+    fromPrice: "From RM 5 / hour",
+    icon: Monitor,
+  },
+];
+
+const SERVICE_PRICE_CARDS: { label: string; price: string; suffix: string }[] = [
+  { label: "PC Gaming", price: "RM 5", suffix: "/ hour" },
+  { label: "PS5", price: "RM 8", suffix: "/ hour" },
+  { label: "VR", price: "RM 10", suffix: "/ session" },
+  { label: "Sim Racing", price: "RM 12", suffix: "/ session" },
+];
+
+/**
+ * Featured titles for the circular game gallery.
+ * Swap each `image` for a remote URL, `import cover from '@/assets/...'` (bundled), or a path under `public/` e.g. `/spiderman.png`.
+ */
+const FEATURED_GAMES: { name: string; image: string }[] = [
+  {
+    name: "Spiderman",
+    image: "/spiderman.png",
+  },
+  {
+    name: "Tekken",
+    image: "/tekken.png",
+  },
+  {
+    name: "FC 26",
+    image: "/fc26.png",
+  },
+  {
+    name: "Forza Horizon 5",
+    image: "/forza.png",
+  },
+  {
+    name: "Need for Speed",
+    image: "/need.png",
+  },
+  {
+    name: "Devil May Cry",
+    image: "/devil.png",
+  },
+  {
+    name: "Street Fighter",
+    image: "/street.png",
+  },
+];
+
+const GAME_LIBRARY_GALLERY_ITEMS = FEATURED_GAMES.map(({ name, image }) => ({
+  text: name,
+  image,
+}));
+
+/**
+ * Tailwind `sm` is 640px and up; below that we treat layout as handheld and tune the WebGL gallery.
+ * useSyncExternalStore avoids a flash of wrong props on first paint and re-subscribes on breakpoint changes only.
+ */
+function useIsBelowSmViewport(): boolean {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      const mq = window.matchMedia("(max-width: 639px)");
+      mq.addEventListener("change", onStoreChange);
+      return () => mq.removeEventListener("change", onStoreChange);
+    },
+    () => window.matchMedia("(max-width: 639px)").matches,
+    () => false,
   );
 }
 
@@ -106,6 +218,7 @@ export function BloomLandingPage() {
     total: number;
   } | null>(null);
   const [liveStatusError, setLiveStatusError] = useState<string | null>(null);
+  const isMobileGallery = useIsBelowSmViewport();
 
   useEffect(() => {
     if (!apiBase) {
@@ -343,24 +456,7 @@ export function BloomLandingPage() {
   const scrollIndicatorWidth = `${Math.min((scrollY / 900) * 100, 100)}%`;
 
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden font-display">
-
-      {/* ── VIDEO BACKGROUND ─────────────────────────────────────────────── */}
-      {/* z-0: sits furthest back; object-cover fills the whole viewport */}
-      <video
-        className="absolute inset-0 z-0 h-full w-full object-cover"
-        src={santaiVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={{
-          transform: `translateY(${videoTranslateY}px) scale(${videoScale})`,
-        }}
-      />
-
-      {/* Subtle darkening scrim so the white text reads cleanly */}
-      <div className="absolute inset-0 z-[1] bg-black/25" />
+    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-black font-display">
 
       {/* ── MAIN CONTENT (above video & scrim) ───────────────────────────── */}
       {/* flex-col on mobile stacks hero → cards; lg:flex-row puts them side-by-side */}
@@ -375,11 +471,26 @@ export function BloomLandingPage() {
         {/* ════════════════════════════════════════════════════════════════
             LEFT PANEL  —  52 % wide on desktop, full-width on mobile
         ════════════════════════════════════════════════════════════════ */}
-        <div className="relative flex w-full flex-col">
+        <div className="relative flex w-full flex-col overflow-hidden">
+          {/* Hero-only video background so lower sections do not inherit it */}
+          <video
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            src={santaiVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              transform: `translateY(${videoTranslateY}px) scale(${videoScale})`,
+            }}
+          />
+
+          {/* Subtle darkening scrim so text remains readable on video */}
+          <div className="absolute inset-0 z-[1] bg-black/25" />
 
           {/* The glass layer is absolutely positioned BEHIND the content.
               inset-4/6 leaves a gap so the video peeks around the edges. */}
-          <div className="liquid-glass-strong absolute inset-4 rounded-3xl lg:inset-6" />
+          <div className="liquid-glass-strong absolute inset-4 z-[2] rounded-3xl lg:inset-6" />
 
           {/* All left-panel content lives here, z-10 above the glass */}
           <div
@@ -490,10 +601,13 @@ export function BloomLandingPage() {
             RIGHT PANEL  —  full-width below hero on mobile, 48% on desktop
         ════════════════════════════════════════════════════════════════ */}
         <div
-          className="flex w-full flex-col gap-6 p-4 transition-transform duration-700 sm:p-6"
+          className="bloom-landing-secondary relative flex w-full flex-col transition-transform duration-700"
           style={{ transform: `translateY(${rightPanelTranslateY}px)` }}
         >
+          <div className="bloom-landing-secondary__ambient" aria-hidden />
+          <div className="bloom-landing-secondary__frost" aria-hidden />
 
+          <div className="relative z-10 flex w-full flex-col gap-6 p-4 sm:p-6">
           {/* ── TOP BAR ─────────────────────────────────────────────── */}
           <div className="flex items-center justify-between">
 
@@ -557,12 +671,10 @@ export function BloomLandingPage() {
             </p>
           </div>
 
-          {/* ── BOTTOM FEATURE SECTION ─────────────────────────────── */}
-          {/* lg:mt-auto pushes this to the bottom only when the panel has a fixed height
-              (desktop flex-row). On mobile the panel is auto-height so mt-auto has no effect. */}
+          {/* ── FEATURE SECTION (carousel + how it works) ─────────── */}
           <div
             ref={featureSectionRef}
-            className="lg:mt-auto transition-all duration-700"
+            className="transition-all duration-700"
             style={{
               opacity:
                 (0.55 + scrollFeatureProgress * 0.45) *
@@ -573,9 +685,7 @@ export function BloomLandingPage() {
               }px)`,
             }}
           >
-            {/* Outer glass container with larger radius per spec (2.5rem) */}
-            <div className="liquid-glass rounded-[2.5rem] p-5">
-              <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
 
                 <div
                   className="overflow-hidden"
@@ -704,8 +814,239 @@ export function BloomLandingPage() {
                   </Link>
                 </div>
 
+            </div>
+          </div>
+
+          {/* ── AVAILABLE SERVICES ─────────────────────────────────── */}
+          <section aria-labelledby="services-heading" className="mx-auto w-full max-w-5xl">
+            <p className="text-xs uppercase tracking-widest text-white/50">
+              What we offer
+            </p>
+            <h2
+              id="services-heading"
+              className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl"
+            >
+              Available services
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/65">
+              VR, consoles, sim rigs, and PCs — pick how you want to play before you
+              walk in.
+            </p>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {CYBERCAFE_SERVICES.map((service) => {
+                const ServiceIcon = service.icon;
+                return (
+                  <div
+                    key={service.title}
+                    className="liquid-glass flex flex-col gap-4 rounded-3xl p-5"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+                      <ServiceIcon className="h-6 w-6 text-white" aria-hidden />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-white">{service.title}</h3>
+                      <p className="text-xs leading-relaxed text-white/60">
+                        {service.description}
+                      </p>
+                    </div>
+                    <p className="mt-auto pt-2 text-xs font-medium text-teal-200/90">
+                      {service.fromPrice}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ── SERVICE PRICING ─────────────────────────────────────── */}
+          <section aria-labelledby="pricing-heading" className="mx-auto w-full max-w-5xl">
+            <p className="text-xs uppercase tracking-widest text-white/50">
+              Straightforward rates
+            </p>
+            <h2
+              id="pricing-heading"
+              className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl"
+            >
+              Service pricing
+            </h2>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {SERVICE_PRICE_CARDS.map((row) => (
+                <div
+                  key={row.label}
+                  className="liquid-glass flex flex-col rounded-2xl px-4 py-5 text-center"
+                >
+                  <p className="text-xs font-medium text-white/70">{row.label}</p>
+                  <p className="mt-3 text-2xl font-semibold tabular-nums text-white">
+                    {row.price}
+                  </p>
+                  <p className="text-[0.65rem] uppercase tracking-wide text-white/45">
+                    {row.suffix}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <ul className="mt-4 space-y-1 text-xs leading-relaxed text-white/55">
+              <li>Prices may vary during events or promotions.</li>
+              <li>Ask staff for package rates.</li>
+            </ul>
+          </section>
+
+          {/* ── GAME LIBRARY (TEASER) ─────────────────────────────── */}
+          <section
+            id="game-library"
+            aria-labelledby="game-library-heading"
+            className="w-full"
+          >
+            <div className="mx-auto w-full max-w-5xl">
+              <p className="text-xs uppercase tracking-widest text-white/50">
+                Popular picks
+              </p>
+              <h2
+                id="game-library-heading"
+                className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl"
+              >
+                Game library
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-white/65">
+                Scroll or drag the strip — a sample of what is on the floor. Ask staff for the full catalog.
+              </p>
+            </div>
+
+            {/* Bleed to the edges of the padded right panel (cancels p-4 / sm:p-6) so the canvas blends with the ambient background. */}
+            <div
+              className="relative -mx-4 mt-6 h-[min(22rem,58dvh)] min-h-[16rem] w-[calc(100%+2rem)] overflow-hidden sm:h-[min(28rem,70dvh)] sm:min-h-[18rem] sm:-mx-6 sm:w-[calc(100%+3rem)]"
+              role="region"
+              aria-label="Featured games carousel"
+            >
+              <CircularGallery
+                items={GAME_LIBRARY_GALLERY_ITEMS}
+                bend={isMobileGallery ? 0.55 : 3}
+                textColor="#ffffff"
+                borderRadius={0.05}
+                scrollEase={0.02}
+                font="600 30px Poppins, ui-sans-serif, system-ui, sans-serif"
+              />
+            </div>
+
+            <div className="mx-auto mt-6 flex w-full max-w-5xl flex-wrap items-center gap-3">
+              <Link
+                to="/app"
+                className="liquid-glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                View full game library
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </section>
+
+          {/* ── VISIT / LOCATION ───────────────────────────────────── */}
+          <section
+            aria-labelledby="visit-heading"
+            className="mx-auto w-full max-w-5xl pb-8"
+          >
+            <p className="text-xs uppercase tracking-widest text-white/50">
+              Find us
+            </p>
+            <h2
+              id="visit-heading"
+              className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl"
+            >
+              Visit Santai Cybercafe
+            </h2>
+
+            <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:items-stretch">
+              <div className="liquid-glass overflow-hidden rounded-3xl">
+                <div
+                  className="relative flex aspect-[16/10] flex-col items-center justify-center gap-3 bg-gradient-to-br from-teal-950/80 via-black/80 to-rose-950/40 px-6 text-center"
+                  role="img"
+                  aria-label="Cybercafe storefront placeholder — replace with a real photo when ready."
+                >
+                  <Building2 className="h-14 w-14 text-white/35" aria-hidden />
+                  <p className="text-xs text-white/50">
+                    Add your storefront photo here (replace this placeholder block).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                <div className="liquid-glass rounded-3xl p-6">
+                  <div className="flex gap-3">
+                    <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-200/90" aria-hidden />
+                    <div>
+                      <p className="text-sm font-medium text-white">Address</p>
+                      <p className="mt-1 text-sm leading-relaxed text-white/70">
+                        {VISIT_ADDRESS}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex gap-3 border-t border-white/10 pt-6">
+                    <Clock3 className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-200/90" aria-hidden />
+                    <div>
+                      <p className="text-sm font-medium text-white">Opening hours</p>
+                      <p className="mt-1 text-sm text-white/70">
+                        Open daily: 10:00 AM – 12:00 AM
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-6">
+                    <a
+                      href={VISIT_MAPS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="liquid-glass inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98] sm:flex-none"
+                    >
+                      <ExternalLink className="h-4 w-4" aria-hidden />
+                      Open Google Maps
+                    </a>
+                    <a
+                      href={VISIT_WHATSAPP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="liquid-glass inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98] sm:flex-none"
+                    >
+                      <MessageCircle className="h-4 w-4" aria-hidden />
+                      WhatsApp
+                    </a>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-white/10 pt-6">
+                    <a
+                      href={VISIT_PHONE_HREF}
+                      className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white"
+                    >
+                      <Phone className="h-4 w-4 text-teal-200/90" aria-hidden />
+                      {VISIT_PHONE_LABEL}
+                    </a>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <a
+                      href={VISIT_SOCIAL_INSTAGRAM}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="liquid-glass rounded-full px-4 py-2 text-xs font-medium text-white/85 transition-colors hover:bg-white/15"
+                    >
+                      Instagram
+                    </a>
+                  </div>
+                </div>
+
+                <Link
+                  to="/app"
+                  className="liquid-glass-strong inline-flex items-center justify-center gap-2 rounded-full px-6 py-4 text-center text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Contact us
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
               </div>
             </div>
+          </section>
+
           </div>
         </div>
         {/* end right panel */}
