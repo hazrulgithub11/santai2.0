@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Building2,
   Car,
   Clock3,
   ExternalLink,
@@ -20,37 +19,9 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import santaiVideo from "@/assets/video/santai2.mp4";
 import CircularGallery from "@/components/CircularGallery";
+import { SantaiLogo } from "@/components/SantaiLogo";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { parseStationsPayload, readErrorMessage } from "@/lib/stations-api";
-
-// ─── Santai logo — 8-petal flower built from rotated ellipses ──────────────
-// Uses className instead of a fixed size so Tailwind responsive classes
-// (w-8 h-8, w-14 h-14, etc.) can control the rendered dimensions.
-function SantaiLogo({ className = "w-8 h-8" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 32 32"   // no width/height attrs — Tailwind class drives size
-      fill="none"
-      aria-label="Santai logo"
-    >
-      {/* Each <ellipse> is a petal; rotate() spins it around the centre (16,16) */}
-      {[0, 45, 90, 135].map((deg) => (
-        <ellipse
-          key={deg}
-          cx="16"
-          cy="10"
-          rx="3"
-          ry="6"
-          fill="white"
-          fillOpacity="0.75"
-          transform={`rotate(${deg} 16 16)`}
-        />
-      ))}
-      <circle cx="16" cy="16" r="4" fill="white" fillOpacity="0.95" />
-    </svg>
-  );
-}
 
 // ─── Icon pill helper — small rounded-full container used across the page ──
 function IconCircle({ children }: { children: React.ReactNode }) {
@@ -62,12 +33,13 @@ function IconCircle({ children }: { children: React.ReactNode }) {
 }
 
 /** Edit address, phone, and social URLs here (no layout changes needed). */
-const VISIT_ADDRESS = "Lot XX, Your Area, Your City";
-const VISIT_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(VISIT_ADDRESS)}`;
-const VISIT_PHONE_LABEL = "+60 XX-XXX XXXX";
-const VISIT_PHONE_HREF = "tel:+60XXXXXXXXX";
-const VISIT_WHATSAPP_URL = "https://wa.me/60XXXXXXXXX";
-const VISIT_SOCIAL_INSTAGRAM = "https://www.instagram.com/";
+const VISIT_ADDRESS =
+  "No. 7 (Tingkat, 1), Jalan Universiti 1, 86400 Parit Raja, Johor";
+const VISIT_MAPS_URL = `https://maps.app.goo.gl/nPZcZKTwEoN2RHM98`;
+const VISIT_PHONE_LABEL = "+60 12 773 5054";
+const VISIT_PHONE_HREF = "tel:+60127735054";
+const VISIT_WHATSAPP_URL = "https://wa.me/60127735054";
+const VISIT_SOCIAL_INSTAGRAM = "https://www.instagram.com/santaiesportstudio/";
 
 const CYBERCAFE_SERVICES: {
   title: string;
@@ -959,15 +931,14 @@ export function BloomLandingPage() {
 
             <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:items-stretch">
               <div className="liquid-glass overflow-hidden rounded-3xl">
-                <div
-                  className="relative flex aspect-[16/10] flex-col items-center justify-center gap-3 bg-gradient-to-br from-teal-950/80 via-black/80 to-rose-950/40 px-6 text-center"
-                  role="img"
-                  aria-label="Cybercafe storefront placeholder — replace with a real photo when ready."
-                >
-                  <Building2 className="h-14 w-14 text-white/35" aria-hidden />
-                  <p className="text-xs text-white/50">
-                    Add your storefront photo here (replace this placeholder block).
-                  </p>
+                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                  <img
+                    src="/kedaisantai.png"
+                    alt="Santai Cybercafe storefront"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               </div>
 
@@ -988,7 +959,7 @@ export function BloomLandingPage() {
                     <div>
                       <p className="text-sm font-medium text-white">Opening hours</p>
                       <p className="mt-1 text-sm text-white/70">
-                        Open daily: 10:00 AM – 12:00 AM
+                        Open daily: 1:00 PM – 3:00 AM
                       </p>
                     </div>
                   </div>

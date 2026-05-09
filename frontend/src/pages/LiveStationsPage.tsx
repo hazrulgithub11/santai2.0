@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { StationsDashboard } from "@/components/StationsDashboard";
 
-export function HomePage() {
+export function LiveStationsPage() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
