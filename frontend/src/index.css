@@ -193,7 +193,7 @@
   .liquid-glass-strong {
     background: rgba(255, 255, 255, 0.01);
     background-blend-mode: luminosity;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(0.5px);
     -webkit-backdrop-filter: blur(50px);
     box-shadow:
       4px 4px 4px rgba(0, 0, 0, 0.05),
@@ -226,5 +226,89 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
+  }
+
+  /*
+   * Bloom landing — secondary section (below hero): tuned to match hero video
+   * (teal/green nebula + warm red ring + earth greens). Edit variables here only.
+   * Each --bloom-sec-glow-* value is "R G B" (0–255, space-separated) for rgb(... / alpha).
+   */
+  .bloom-landing-secondary {
+    /* Teal-green (upper nebula), warm coral-red (ring), emerald (lower planet mass) */
+    --bloom-sec-glow-top: 45 212 191;
+    --bloom-sec-glow-top-a: 0.22;
+    --bloom-sec-glow-side: 248 113 113;
+    --bloom-sec-glow-side-a: 0.16;
+    --bloom-sec-glow-bottom: 52 211 153;
+    --bloom-sec-glow-bottom-a: 0.12;
+    /* Dark base: blue-green shadow → slight green mid → very subtle warm floor */
+    --bloom-sec-bg-start: 200 38% 7%;
+    --bloom-sec-bg-mid: 165 32% 5.5%;
+    --bloom-sec-bg-end: 15 35% 5%;
+
+    position: relative;
+    isolation: isolate;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .bloom-landing-secondary__ambient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .bloom-landing-secondary__ambient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 130% 90% at 50% -25%,
+        rgb(var(--bloom-sec-glow-top) / var(--bloom-sec-glow-top-a)),
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 85% 65% at 105% 25%,
+        rgb(var(--bloom-sec-glow-side) / var(--bloom-sec-glow-side-a)),
+        transparent 52%
+      ),
+      radial-gradient(
+        ellipse 75% 55% at -5% 85%,
+        rgb(var(--bloom-sec-glow-bottom) / var(--bloom-sec-glow-bottom-a)),
+        transparent 48%
+      ),
+      linear-gradient(
+        175deg,
+        hsl(var(--bloom-sec-bg-start)) 0%,
+        hsl(var(--bloom-sec-bg-mid)) 45%,
+        hsl(var(--bloom-sec-bg-end)) 100%
+      );
+  }
+
+  .bloom-landing-secondary__frost {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    /* Light teal lift at top, soft warm vignette at bottom — echoes video without muddying cards */
+    background: linear-gradient(
+      180deg,
+      rgba(45, 212, 191, 0.07) 0%,
+      rgba(255, 255, 255, 0.03) 24%,
+      transparent 38%,
+      transparent 62%,
+      rgba(127, 29, 29, 0.08) 100%
+    );
+    backdrop-filter: blur(22px) saturate(1.35);
+    -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bloom-landing-secondary__frost {
+      backdrop-filter: blur(10px) saturate(1.1);
+      -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    }
   }
 }

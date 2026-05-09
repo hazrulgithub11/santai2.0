@@ -343,24 +343,7 @@ export function BloomLandingPage() {
   const scrollIndicatorWidth = `${Math.min((scrollY / 900) * 100, 100)}%`;
 
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden font-display">
-
-      {/* ── VIDEO BACKGROUND ─────────────────────────────────────────────── */}
-      {/* z-0: sits furthest back; object-cover fills the whole viewport */}
-      <video
-        className="absolute inset-0 z-0 h-full w-full object-cover"
-        src={santaiVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={{
-          transform: `translateY(${videoTranslateY}px) scale(${videoScale})`,
-        }}
-      />
-
-      {/* Subtle darkening scrim so the white text reads cleanly */}
-      <div className="absolute inset-0 z-[1] bg-black/25" />
+    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-black font-display">
 
       {/* ── MAIN CONTENT (above video & scrim) ───────────────────────────── */}
       {/* flex-col on mobile stacks hero → cards; lg:flex-row puts them side-by-side */}
@@ -375,11 +358,26 @@ export function BloomLandingPage() {
         {/* ════════════════════════════════════════════════════════════════
             LEFT PANEL  —  52 % wide on desktop, full-width on mobile
         ════════════════════════════════════════════════════════════════ */}
-        <div className="relative flex w-full flex-col">
+        <div className="relative flex w-full flex-col overflow-hidden">
+          {/* Hero-only video background so lower sections do not inherit it */}
+          <video
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            src={santaiVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              transform: `translateY(${videoTranslateY}px) scale(${videoScale})`,
+            }}
+          />
+
+          {/* Subtle darkening scrim so text remains readable on video */}
+          <div className="absolute inset-0 z-[1] bg-black/25" />
 
           {/* The glass layer is absolutely positioned BEHIND the content.
               inset-4/6 leaves a gap so the video peeks around the edges. */}
-          <div className="liquid-glass-strong absolute inset-4 rounded-3xl lg:inset-6" />
+          <div className="liquid-glass-strong absolute inset-4 z-[2] rounded-3xl lg:inset-6" />
 
           {/* All left-panel content lives here, z-10 above the glass */}
           <div
@@ -490,10 +488,13 @@ export function BloomLandingPage() {
             RIGHT PANEL  —  full-width below hero on mobile, 48% on desktop
         ════════════════════════════════════════════════════════════════ */}
         <div
-          className="flex w-full flex-col gap-6 p-4 transition-transform duration-700 sm:p-6"
+          className="bloom-landing-secondary relative flex w-full flex-col transition-transform duration-700"
           style={{ transform: `translateY(${rightPanelTranslateY}px)` }}
         >
+          <div className="bloom-landing-secondary__ambient" aria-hidden />
+          <div className="bloom-landing-secondary__frost" aria-hidden />
 
+          <div className="relative z-10 flex w-full flex-col gap-6 p-4 sm:p-6">
           {/* ── TOP BAR ─────────────────────────────────────────────── */}
           <div className="flex items-center justify-between">
 
@@ -573,9 +574,7 @@ export function BloomLandingPage() {
               }px)`,
             }}
           >
-            {/* Outer glass container with larger radius per spec (2.5rem) */}
-            <div className="liquid-glass rounded-[2.5rem] p-5">
-              <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
 
                 <div
                   className="overflow-hidden"
@@ -704,8 +703,8 @@ export function BloomLandingPage() {
                   </Link>
                 </div>
 
-              </div>
             </div>
+          </div>
           </div>
         </div>
         {/* end right panel */}
