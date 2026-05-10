@@ -24,7 +24,7 @@ function AppLayout() {
             <div className="flex items-center gap-2">
               <SantaiLogo className="h-8 w-8 shrink-0" />
               <span className="text-2xl font-semibold tracking-tighter text-white">
-                Santai
+                Vike Legacy
               </span>
             </div>
             <nav aria-label="Sessions">
@@ -85,7 +85,7 @@ function App() {
         {/* Bloom landing page — full-screen, no app shell */}
         <Route path="/" element={<LandingWithLoadingVideo />} />
 
-        {/* Santai cybercafe app — wrapped in the standard shell */}
+        {/* Vike Legacy app — wrapped in the standard shell */}
         <Route element={<AppLayout />}>
           <Route path="/app" element={<HomePage />} />
           <Route path="/app/live" element={<LiveStationsPage />} />
