@@ -17,6 +17,7 @@ import {
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import santaiVideo from "@/assets/video/santai2.mp4";
+import Carousel, { type CarouselItem } from "@/components/Carousel";
 import CircularGallery from "@/components/CircularGallery";
 import { SantaiLogo } from "@/components/SantaiLogo";
 import { getApiBaseUrl } from "@/lib/api-base";
@@ -36,7 +37,7 @@ const VISIT_BRANCHES: {
   name: string;
   address: string;
   mapsUrl: string;
-  /** Path under `frontend/public/` (e.g. `/kedaisantai.png`). */
+  /** Path under `frontend/public/` (e.g. `/kedaiindah.png`). */
   storeImageSrc: string;
 }[] = [
   {
@@ -51,10 +52,26 @@ const VISIT_BRANCHES: {
     address:
       "Cyber Cafe Vike Legacy, Jalan Parit Yusof, Pekan Baharu, 83600 Semerah, Johor",
     mapsUrl: "https://maps.app.goo.gl/dQZEAYUfzAe2ggw79",
-    // Replace with a second image in `public/` when you have a branch-specific photo.
     storeImageSrc: "/kedaiyusof.png",
   },
 ];
+/** Filenames under `public/store/` — add new photos here when you drop files into that folder. */
+const STORE_IMAGE_FILENAMES = [
+  "image.png",
+  "image copy.png",
+  "image copy 2.png",
+  "image copy 3.png",
+  "image copy 4.png",
+] as const;
+
+const STORE_IMAGE_CAROUSEL_ITEMS: CarouselItem[] = STORE_IMAGE_FILENAMES.map(
+  (filename, index) => ({
+    id: index + 1,
+    title: "",
+    description: "",
+    imageSrc: `/store/${encodeURIComponent(filename)}`,
+  }),
+);
 const VISIT_PHONE_LABEL = "0179075754";
 const VISIT_PHONE_HREF = "tel:+60179075754";
 const VISIT_WHATSAPP_URL = "https://wa.me/60179075754";
@@ -197,6 +214,8 @@ export function BloomLandingPage() {
   const [liveStatusError, setLiveStatusError] = useState<string | null>(null);
   const isMobileGallery = useIsBelowSmViewport();
   const [isStoreGalleryOpen, setIsStoreGalleryOpen] = useState(false);
+  /** Which branch photo is shown in the visit-section preview (auto-rotates). */
+  const [visitStorePreviewIndex, setVisitStorePreviewIndex] = useState(0);
   const storeGalleryCloseRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -363,6 +382,18 @@ export function BloomLandingPage() {
       mediaQuery.removeEventListener("change", updatePreference);
     };
   }, []);
+
+  useEffect(() => {
+    // Cycle storefront preview images on a timer. We skip autoplay when the user
+    // prefers reduced motion so the page stays static unless they open the gallery.
+    const n = VISIT_BRANCHES.length;
+    if (n <= 1 || isReducedMotion) return;
+    const intervalMs = 4500;
+    const timerId = window.setInterval(() => {
+      setVisitStorePreviewIndex((prev) => (prev + 1) % n);
+    }, intervalMs);
+    return () => window.clearInterval(timerId);
+  }, [isReducedMotion]);
 
   useEffect(() => {
     let animationFrameId = 0;
@@ -823,6 +854,23 @@ export function BloomLandingPage() {
                   </Link>
                 </div>
 
+                <div className="mb-8">
+                  <h4 className="mb-3 text-sm font-medium text-white">
+                    Our stores
+                  </h4>
+                  <div className="relative mx-auto h-[360px] w-full max-w-[360px]">
+                    <Carousel
+                      items={STORE_IMAGE_CAROUSEL_ITEMS}
+                      baseWidth={360}
+                      autoplay={true}
+                      autoplayDelay={3200}
+                      pauseOnHover={true}
+                      loop={true}
+                      round={false}
+                    />
+                  </div>
+                </div>
+
             </div>
           </div>
           </div>
@@ -980,17 +1028,49 @@ export function BloomLandingPage() {
                   aria-label="Open storefront photo gallery for both branches"
                 >
                   <div className="relative aspect-[16/10] w-full overflow-hidden">
-                    <img
-                      src="/kedaisantai.png"
-                      alt="Vike Legacy Cyber Cafe — tap to view photos of both branches"
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    {VISIT_BRANCHES.map((branch, index) => {
+                      const isActive = index === visitStorePreviewIndex;
+                      return (
+                        <img
+                          key={branch.name}
+                          src={branch.storeImageSrc}
+                          alt={
+                            isActive
+                              ? `${branch.name} — Vike Legacy Cyber Cafe storefront; tap to view photos of both branches`
+                              : ""
+                          }
+                          className={`absolute inset-0 h-full w-full object-cover group-hover:scale-[1.03] ${
+                            isActive ? "opacity-100" : "opacity-0"
+                          } ${
+                            isReducedMotion
+                              ? "transition-none"
+                              : "transition-[opacity,transform] duration-700 ease-in-out"
+                          }`}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
+                          aria-hidden={!isActive}
+                        />
+                      );
+                    })}
                     <div
                       className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/25"
                       aria-hidden
                     />
+                    <div
+                      className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 gap-1.5"
+                      aria-hidden
+                    >
+                      {VISIT_BRANCHES.map((_, index) => (
+                        <span
+                          key={index}
+                          className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 ${
+                            index === visitStorePreviewIndex
+                              ? "bg-white"
+                              : "bg-white/40"
+                          }`}
+                        />
+                      ))}
+                    </div>
                     <span className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-full bg-black/60 px-3 py-2 text-center text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 sm:text-sm">
                       View branch photos
                     </span>
