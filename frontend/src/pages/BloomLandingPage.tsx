@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Car,
   Clock3,
   ExternalLink,
   Gamepad2,
@@ -10,14 +9,15 @@ import {
   MessageCircle,
   Monitor,
   Phone,
-  Sparkles,
   Timer,
+  X,
   type LucideIcon,
   Users,
 } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import santaiVideo from "@/assets/video/santai2.mp4";
+import Carousel, { type CarouselItem } from "@/components/Carousel";
 import CircularGallery from "@/components/CircularGallery";
 import { SantaiLogo } from "@/components/SantaiLogo";
 import { getApiBaseUrl } from "@/lib/api-base";
@@ -32,13 +32,49 @@ function IconCircle({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Edit address, phone, and social URLs here (no layout changes needed). */
-const VISIT_ADDRESS =
-  "No. 7 (Tingkat, 1), Jalan Universiti 1, 86400 Parit Raja, Johor";
-const VISIT_MAPS_URL = `https://maps.app.goo.gl/nPZcZKTwEoN2RHM98`;
-const VISIT_PHONE_LABEL = "+60 12 773 5054";
-const VISIT_PHONE_HREF = "tel:+60127735054";
-const VISIT_WHATSAPP_URL = "https://wa.me/60127735054";
+/** Edit branch rows, storefront photos (`public/…`), phone, and social URLs here. */
+const VISIT_BRANCHES: {
+  name: string;
+  address: string;
+  mapsUrl: string;
+  /** Path under `frontend/public/` (e.g. `/kedaiindah.png`). */
+  storeImageSrc: string;
+}[] = [
+  {
+    name: "Jalan Indah",
+    address:
+      "CyberCafe Vike Legacy, 3, Jalan Indah 2, Pekan Baharu, 83600 Semerah, Johor",
+    mapsUrl: "https://maps.app.goo.gl/XuyHDcRrKQ8kfyQEA",
+    storeImageSrc: "/kedaiindah.png",
+  },
+  {
+    name: "Jalan Parit Yusof",
+    address:
+      "Cyber Cafe Vike Legacy, Jalan Parit Yusof, Pekan Baharu, 83600 Semerah, Johor",
+    mapsUrl: "https://maps.app.goo.gl/dQZEAYUfzAe2ggw79",
+    storeImageSrc: "/kedaiyusof.png",
+  },
+];
+/** Filenames under `public/store/` — add new photos here when you drop files into that folder. */
+const STORE_IMAGE_FILENAMES = [
+  "image.png",
+  "image copy.png",
+  "image copy 2.png",
+  "image copy 3.png",
+  "image copy 4.png",
+] as const;
+
+const STORE_IMAGE_CAROUSEL_ITEMS: CarouselItem[] = STORE_IMAGE_FILENAMES.map(
+  (filename, index) => ({
+    id: index + 1,
+    title: "",
+    description: "",
+    imageSrc: `/store/${encodeURIComponent(filename)}`,
+  }),
+);
+const VISIT_PHONE_LABEL = "0179075754";
+const VISIT_PHONE_HREF = "tel:+60179075754";
+const VISIT_WHATSAPP_URL = "https://wa.me/60179075754";
 const VISIT_SOCIAL_INSTAGRAM = "https://www.instagram.com/santaiesportstudio/";
 
 const CYBERCAFE_SERVICES: {
@@ -48,36 +84,22 @@ const CYBERCAFE_SERVICES: {
   icon: LucideIcon;
 }[] = [
   {
-    title: "VR Gaming",
-    description: "Immersive virtual reality games and experiences.",
-    fromPrice: "From RM 10 / session",
-    icon: Sparkles,
-  },
-  {
     title: "PS5 Console",
     description: "Play popular PlayStation titles with friends.",
-    fromPrice: "From RM 8 / hour",
+    fromPrice: "From RM 3 / hour",
     icon: Gamepad2,
-  },
-  {
-    title: "Sim Racing",
-    description: "Racing wheel setup for realistic driving sessions.",
-    fromPrice: "From RM 12 / session",
-    icon: Car,
   },
   {
     title: "PC Gaming",
     description: "High-performance PCs for competitive and casual gaming.",
-    fromPrice: "From RM 5 / hour",
+    fromPrice: "From RM 3 / hour",
     icon: Monitor,
   },
 ];
 
 const SERVICE_PRICE_CARDS: { label: string; price: string; suffix: string }[] = [
-  { label: "PC Gaming", price: "RM 5", suffix: "/ hour" },
-  { label: "PS5", price: "RM 8", suffix: "/ hour" },
-  { label: "VR", price: "RM 10", suffix: "/ session" },
-  { label: "Sim Racing", price: "RM 12", suffix: "/ session" },
+  { label: "PC Gaming", price: "RM 3", suffix: "/ hour" },
+  { label: "PS5", price: "RM 3", suffix: "/ hour" }
 ];
 
 /**
@@ -191,6 +213,10 @@ export function BloomLandingPage() {
   } | null>(null);
   const [liveStatusError, setLiveStatusError] = useState<string | null>(null);
   const isMobileGallery = useIsBelowSmViewport();
+  const [isStoreGalleryOpen, setIsStoreGalleryOpen] = useState(false);
+  /** Which branch photo is shown in the visit-section preview (auto-rotates). */
+  const [visitStorePreviewIndex, setVisitStorePreviewIndex] = useState(0);
+  const storeGalleryCloseRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!apiBase) {
@@ -358,6 +384,18 @@ export function BloomLandingPage() {
   }, []);
 
   useEffect(() => {
+    // Cycle storefront preview images on a timer. We skip autoplay when the user
+    // prefers reduced motion so the page stays static unless they open the gallery.
+    const n = VISIT_BRANCHES.length;
+    if (n <= 1 || isReducedMotion) return;
+    const intervalMs = 4500;
+    const timerId = window.setInterval(() => {
+      setVisitStorePreviewIndex((prev) => (prev + 1) % n);
+    }, intervalMs);
+    return () => window.clearInterval(timerId);
+  }, [isReducedMotion]);
+
+  useEffect(() => {
     let animationFrameId = 0;
 
     const onScroll = () => {
@@ -419,6 +457,28 @@ export function BloomLandingPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isStoreGalleryOpen) {
+      return;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // Defer focus to after the dialog is in the DOM so screen readers and keyboard users land on Close first.
+    queueMicrotask(() => storeGalleryCloseRef.current?.focus());
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsStoreGalleryOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isStoreGalleryOpen]);
+
   const heroScrollProgress = Math.min(scrollY / 520, 1);
   const videoTranslateY = isReducedMotion ? 0 : heroScrollProgress * 36;
   const videoScale = isReducedMotion ? 1 : 1 + heroScrollProgress * 0.08;
@@ -479,7 +539,7 @@ export function BloomLandingPage() {
               <div className="flex items-center gap-2">
                 <SantaiLogo className="h-8 w-8" />
                 <span className="text-2xl font-semibold tracking-tighter text-white">
-                  Santai 
+                  Vike Legacy 
                 </span>
               </div>
 
@@ -507,12 +567,12 @@ export function BloomLandingPage() {
               
 
               <h1 className="text-4xl font-medium leading-tight tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
-                Santai E-Sports
+                Vike Legacy
                 <br />
                 <em className="font-serif italic text-white/80">
-                  Studio{" "}
+                  Cyber{" "}
                 </em>
-                est.2023
+                Cafe
               </h1>
 
               <p className="max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
@@ -561,7 +621,7 @@ export function BloomLandingPage() {
               <div className="flex items-center gap-3">
                 <div className="h-px w-12 bg-white/30" />
                 <span className="text-xs uppercase tracking-widest text-white/50">
-                  Santai Cybercafe
+                  Vike Legacy Cyber Cafe
                 </span>
                 <div className="h-px w-12 bg-white/30" />
               </div>
@@ -794,6 +854,23 @@ export function BloomLandingPage() {
                   </Link>
                 </div>
 
+                <div className="mb-8">
+                  <h4 className="mb-3 text-sm font-medium text-white">
+                    Our stores
+                  </h4>
+                  <div className="relative mx-auto h-[360px] w-full max-w-[360px]">
+                    <Carousel
+                      items={STORE_IMAGE_CAROUSEL_ITEMS}
+                      baseWidth={360}
+                      autoplay={true}
+                      autoplayDelay={3200}
+                      pauseOnHover={true}
+                      loop={true}
+                      round={false}
+                    />
+                  </div>
+                </div>
+
             </div>
           </div>
           </div>
@@ -936,35 +1013,108 @@ export function BloomLandingPage() {
               id="visit-heading"
               className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl"
             >
-              Visit Santai Cybercafe
+              Visit Vike Legacy Cyber Cafe
             </h2>
 
             <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:items-stretch">
               <div className="liquid-glass overflow-hidden rounded-3xl">
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
-                  <img
-                    src="/kedaisantai.png"
-                    alt="Santai Cybercafe storefront"
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsStoreGalleryOpen(true)}
+                  className="group relative block w-full cursor-pointer border-0 bg-transparent p-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300/90"
+                  aria-haspopup="dialog"
+                  aria-expanded={isStoreGalleryOpen}
+                  aria-controls="store-gallery-dialog"
+                  aria-label="Open storefront photo gallery for both branches"
+                >
+                  <div className="relative aspect-[16/10] w-full overflow-hidden">
+                    {VISIT_BRANCHES.map((branch, index) => {
+                      const isActive = index === visitStorePreviewIndex;
+                      return (
+                        <img
+                          key={branch.name}
+                          src={branch.storeImageSrc}
+                          alt={
+                            isActive
+                              ? `${branch.name} — Vike Legacy Cyber Cafe storefront; tap to view photos of both branches`
+                              : ""
+                          }
+                          className={`absolute inset-0 h-full w-full object-cover group-hover:scale-[1.03] ${
+                            isActive ? "opacity-100" : "opacity-0"
+                          } ${
+                            isReducedMotion
+                              ? "transition-none"
+                              : "transition-[opacity,transform] duration-700 ease-in-out"
+                          }`}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
+                          aria-hidden={!isActive}
+                        />
+                      );
+                    })}
+                    <div
+                      className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/25"
+                      aria-hidden
+                    />
+                    <div
+                      className="pointer-events-none absolute top-3 left-1/2 flex -translate-x-1/2 gap-1.5"
+                      aria-hidden
+                    >
+                      {VISIT_BRANCHES.map((_, index) => (
+                        <span
+                          key={index}
+                          className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 ${
+                            index === visitStorePreviewIndex
+                              ? "bg-white"
+                              : "bg-white/40"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-full bg-black/60 px-3 py-2 text-center text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 sm:text-sm">
+                      View branch photos
+                    </span>
+                  </div>
+                </button>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {VISIT_BRANCHES.map((branch) => (
+                    <div
+                      key={branch.name}
+                      className="liquid-glass flex flex-col rounded-3xl p-5 sm:p-6"
+                    >
+                      <p className="text-xs font-medium uppercase tracking-widest text-white/50">
+                        {branch.name}
+                      </p>
+                      <div className="mt-3 flex flex-1 gap-3">
+                        <MapPin
+                          className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-200/90"
+                          aria-hidden
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white">Address</p>
+                          <p className="mt-1 text-sm leading-relaxed text-white/70">
+                            {branch.address}
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={branch.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="liquid-glass mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <ExternalLink className="h-4 w-4" aria-hidden />
+                        Google Maps
+                      </a>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="liquid-glass rounded-3xl p-6">
                   <div className="flex gap-3">
-                    <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-200/90" aria-hidden />
-                    <div>
-                      <p className="text-sm font-medium text-white">Address</p>
-                      <p className="mt-1 text-sm leading-relaxed text-white/70">
-                        {VISIT_ADDRESS}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex gap-3 border-t border-white/10 pt-6">
                     <Clock3 className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-200/90" aria-hidden />
                     <div>
                       <p className="text-sm font-medium text-white">Opening hours</p>
@@ -975,15 +1125,6 @@ export function BloomLandingPage() {
                   </div>
 
                   <div className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-6">
-                    <a
-                      href={VISIT_MAPS_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="liquid-glass inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98] sm:flex-none"
-                    >
-                      <ExternalLink className="h-4 w-4" aria-hidden />
-                      Open Google Maps
-                    </a>
                     <a
                       href={VISIT_WHATSAPP_URL}
                       target="_blank"
@@ -1033,6 +1174,78 @@ export function BloomLandingPage() {
         {/* end right panel */}
 
       </div>
+
+      {isStoreGalleryOpen ? (
+        <div
+          className="fixed inset-0 z-[200] flex items-end justify-center p-4 sm:items-center sm:p-6"
+          role="presentation"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/75 backdrop-blur-[2px]"
+            aria-label="Close gallery"
+            onClick={() => setIsStoreGalleryOpen(false)}
+          />
+          <div
+            id="store-gallery-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="store-gallery-heading"
+            className="liquid-glass-strong relative z-10 flex max-h-[min(92dvh,48rem)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 p-5 sm:p-6">
+              <h2
+                id="store-gallery-heading"
+                className="text-lg font-medium tracking-tight text-white sm:text-xl"
+              >
+                Our branches
+              </h2>
+              <button
+                ref={storeGalleryCloseRef}
+                type="button"
+                onClick={() => setIsStoreGalleryOpen(false)}
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300/90"
+                aria-label="Close gallery"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+            <div className="grid flex-1 gap-4 overflow-y-auto p-4 sm:grid-cols-2 sm:gap-5 sm:p-6">
+              {VISIT_BRANCHES.map((branch) => (
+                <div
+                  key={branch.name}
+                  className="liquid-glass flex flex-col overflow-hidden rounded-2xl"
+                >
+                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <img
+                      src={branch.storeImageSrc}
+                      alt={`${branch.name} — storefront`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-3 p-4">
+                    <p className="text-sm font-medium text-white">{branch.name}</p>
+                    <p className="text-xs leading-relaxed text-white/70">
+                      {branch.address}
+                    </p>
+                    <a
+                      href={branch.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="liquid-glass inline-flex items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-medium text-white transition-transform hover:scale-[1.02] active:scale-[0.98] sm:text-sm"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      Google Maps
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
